@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jade Delight</title>
+</head>
+
+<body>
+<script language="javascript">
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 5.25),
+	new MenuItem("Moo Shi Chicken", 6.5),
+	new MenuItem("Fried Rice", 2.35)
+);
+
+
+
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' size='1' onchange='makeTotal()'>";
+	for (j=minRange; j<=maxRange; j++) 
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+
+function makeTotal() {
+	var item; 
+	var subtotal = 0; 
+
+	for (var i = 0; i < menuItems.length; i++) {
+		item = document.getElementsByName("quan" + i)[0].value; 
+		if (parseInt(item) != 0) {
+			item_cost = (parseInt(item) * menuItems[i].cost).toFixed(2);
+			document.getElementsByName("cost")[i].value = item_cost; 
+			subtotal += parseFloat(item_cost);
+		}
+	}
+
+	subtotal = subtotal; 
+	tax = (subtotal * 0.0625); 
+	total = subtotal + tax; 
+	document.getElementById("subtotal").value = subtotal.toFixed(2);
+	document.getElementById("tax").value = tax.toFixed(2);
+	document.getElementById("total").value = total.toFixed(2);
+
+}
+
+
+function validate_name(name) {
+	temp_name = /^[A-Za-z]+$/; 
+	return temp_name.test(name);
+}
+
+
+
+function validate_lname() {
+	var lname = document.getElementsByName('lname')[0]; 
+	var error_alert_lname = document.getElementById("error_lname");
+	
+	if (lname.value == "") {
+		error_alert_lname.innerHTML = " Please enter last name";
+		lname.focus(); 
+		return false; 
+	}
+	
+	temp_lname = lname.value.replace(/\s+/g, '');
+	name = validate_name(lname); 
+	if (!name) {
+		error_alert_lname.innerHTML = " Please enter valid characters";
+		lname.focus();
+		return false; 
+	}
+	return true; 
+}
+
+function validate_phone() {
+	var phone = document.getElementsByName('phone')[0]; 
+	var error_alert_phone = document.getElementById("error_phone");
+
+	if (phone.value == "") {
+		error_alert_phone.innerHTML = " Please enter a valid phone number"; 
+		phone.focus(); 
+		return false; 
+	}
+	
+	var phone_num1 = /^[0-9]{3}-[0-9]{3}-[0-9]{4}$/;
+	var phone_num2 = /^[(][0-9]{3}[)]-[0-9]{3}-[0-9]{4}$/;
+
+	if (!(phone_num1.test(phone.value) || (phone_num2.test(phone.value)))) {
+		error_alert_phone.innerHTML = " Please enter a valid phone number in the form of 123-456-7890."
+		phone.focus(); 
+		return false; 
+	}
+	return true; 
+}
+
+function validate_address(type, error) {
+	var place = document.getElementsByName(type)[0]; 
+	var error_alert = document.getElementById(error); 
+
+	if (place.value == "") {
+		error_alert.innerHTML = " Please enter a " + type; 
+		place.focus(); 
+		return false; 
+	}
+	return true; 
+}
+
+function validate_ETA(t) {
+	time = new Date(); 
+	return new Date(time.getTime() + t*60000); 
+}
+
+
+
+function new_window(eta, order, total) {
+	let newWin = window.open("Jade Delight", "", "");
+	var hour = eta.getHours() > 12 ? eta.getHours() - 12 : eta.getHours();
+	var minute = eta.getMinutes();
+
+	if (total == "") {
+		total = 0; 
+		total.toFixed(2);
+	}
+
+	newWin.document.write("Your order has been placed.\nETA: " + (hour) + ":" + (minute.toString().padStart(2, '0')) + "\nTotal: $" + total + "\nOrder: " + order);
+}
+
+function driver() {
+	var bool = true; 
+
+	if (!validate_lname()) bool = false; 
+	if (!validate_phone()) bool = false; 
+
+	var time
+	var order; 
+	var order_type = document.getElementsByName("p_or_d")[0].checked; 
+
+	if (!order_type) {
+		if (!validate_address("street", "error_street")){
+			bool = false; 
+		}
+		if (!validate_address("city", "error_city")){
+			bool = false;
+		} 
+		time = 30; 
+		order = "Delivery";
+	}
+	else {
+		time = 15;
+		order = "Pickup";
+	}
+	var eta = validate_ETA(time); 
+	var total = document.getElementById("total").value; 
+	if (bool) {
+		new_window(eta, order, total);
+	}
+
+
+	return bool; 
+}
+
+
+</script>
+
+<h1>Jade Delight</h1>
+<form>
+
+<p>First Name: <input type="text"  name='fname'/></p>
+<p>Last Name*:  <input type="text"  name='lname'/><span id="error_lname">&nbsp;</span></p>
+<p>Street<span id="del1"></span>: <input type="text"  name='street'/><span id="error_street">&nbsp;</span></p>
+<p>City<span id="del2"></span>: <input type="text"  name='city'/><span id="error_city">&nbsp;</span></p>
+<p>Phone*: <input type="tel"  name='phone'/><span id="error_phone">&nbsp;</span></p>
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" checked="checked"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery'/>Delivery
+</p>
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script language="javascript">
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr><td>";
+	  s += makeSelect("quan" + i, 0, 10);
+	  s += "</td><td>" + menuItems[i].name + "</td>";
+	  s += "<td> $ " + menuItems[i].cost.toFixed(2) + "</td>";
+	  s += "<td>$<input type='text' name='cost'/></td></tr>";
+  }
+  document.writeln(s);
+</script>
+</table>
+<p>Subtotal: 
+   $<input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p>Mass tax 6.25%:
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p>Total: $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "button" value = "Submit Order" onclick="return driver()" />
+
+</form>
+</body>
+</html>
